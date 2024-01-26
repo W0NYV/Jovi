@@ -16,9 +16,129 @@ RWStructuredBuffer<float3> _BoidForceBufferWrite;
 // シェアードメモリ
 groupshared BoidData boid_data[SIMULATION_BLOCK_SIZE];
 
+int _BoidsCount;
+
+float _DeltaTime;
+
+float _SeparateNeighborhoodRadius; //分離を適用する他の個体との距離
+float _SeparateWeight;
+
+float _AlignmentNeighborhoodRadius; //整列を適用する他の個体との距離
+float _AlignmentWeight;
+
+float _CohesionNeighborhoodRadius; //結合を適用する他の個体との距離
+float _CohesionWeight;
+
+float _MaxSpeed;
+float _MaxSteelForce; //操舵する力の最大値
+
+float4 _WallCenter;
+float4 _WallSize;
+float _AvoidWallWeight;
+
 [numthreads(SIMULATION_BLOCK_SIZE, 1, 1)]
-void Force()
+void Force
+(
+    uint3 DTid : SV_DispatchThreadID, //スレッド全体で固有のID
+    uint3 Gid : SV_GroupID, //グループのID
+    uint3 GTid : SV_GroupThreadID, //グループ内のスレッドID
+    uint3 GI : SV_GroupIndex //SV_GroupThreadIDを一次元にしたもの 0-255
+)
 {
+    const unsigned int P_ID = DTid.x; //自身のID
+    float3 P_position = _BoidDataBufferRead[P_ID].position;
+    float3 P_Velocity = _BoidDataBufferRead[P_ID].velocity;
+
+    float3 force = float3(0, 0, 0);
+
+    float3 sepPosSum = float3(0, 0, 0); //分離計算用 位置加算変数
+    int sepCount = 0; //分離のために計算した他の個体の数
+
+    float3 aliVelSum = float3(0, 0, 0);
+    int aliCount = 0;
+
+    float3 cohPosSum = float3(0, 0, 0);
+    int cohCount = 0;
+
+    //グループスレッド数ごとの実行（グループ数分実行）
+    [loop]
+    for (uint N_block_ID = 0; N_block_ID < (uint)_BoidsCount; N_block_ID += SIMULATION_BLOCK_SIZE)
+    {
+        //SIMULATION_BLOCK_SIZE分のBoidDataを、シェアードメモリに格納
+        boid_data[GI] = _BoidDataBufferRead[N_block_ID + GI];
+
+        GroupMemoryBarrierWithGroupSync();
+
+        for (int N_tile_ID = 0; N_tile_ID < SIMULATION_BLOCK_SIZE; N_tile_ID++)
+        {
+            float3 N_position = boid_data[N_tile_ID].position;
+            float3 N_velocity = boid_data[N_tile_ID].velocity;
+
+            float3 diff = P_position - N_position;
+            float dist = sqrt(dot(diff, diff));
+
+            //分離
+            if (dist > 0.0 && dist <= _SeparateNeighborhoodRadius)
+            {
+                float3 repulse = normalize(P_position - N_position);
+
+                repulse /= dist;
+                sepPosSum += repulse;
+                sepCount++;
+            }
+
+            //整列
+            if (dist > 0.0 && dist <= _AlignmentNeighborhoodRadius)
+            {
+                aliVelSum += N_velocity;
+                aliCount++;
+            }
+
+            //結合
+            if (dist > 0.0 && dist <= _CohesionNeighborhoodRadius)
+            {
+                cohPosSum += N_position;
+                cohCount++;
+            }
+        }
+
+        GroupMemoryBarrierWithGroupSync();
+    }
+
+    //操舵力(分離)
+    float3 sepSteer = (float3)0.0;
+    if (sepCount > 0)
+    {
+        sepSteer = sepPosSum / (float)sepCount;
+        sepSteer = normalize(sepSteer) * _MaxSpeed;
+        sepSteer = sepSteer - P_Velocity;
+        sepSteer = limit(sepSteer, _MaxSteelForce);
+    }
+
+    float3 aliSteer = (float3)0.0;
+    if (aliCount > 0)
+    {
+        aliSteer = aliVelSum / (float)aliCount;
+        aliSteer = normalize(aliSteer) * _MaxSpeed;
+        aliSteer = aliSteer - P_Velocity;
+        aliSteer = limit(aliSteer, _MaxSteelForce)
+    }
+
+    float3 cohSteer = (float3)0.0;
+    if (cohCount > 0)
+    {
+        cohSteer = cohPosSum / (float)cohCount;
+        cohSteer = cohPosSum - P_position; //平均位置方向へのベクトルを求める
+        cohSteer = normalize(cohSteer) * _MaxSpeed;
+        cohSteer = cohSteer - P_Velocity;
+        cohSteer = limit(cohSteer, _MaxSteelForce);
+    }
+
+    force += aliSteer * _AlignmentWeight;
+    force += cohSteer * _CohesionWeight;
+    force += sepSteer * _SeparateWeight;
+
+    _BoidForceBufferWrite[P_ID] = force;
 
 }
 
