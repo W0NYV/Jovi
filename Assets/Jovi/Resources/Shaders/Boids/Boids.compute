@@ -1,0 +1,29 @@
+#include "BoidsUtility.cginc"
+
+#pragma kernel Force
+#pragma kernel Integrate
+
+#define SIMULATION_BLOCK_SIZE 256
+
+// BoidDataのバッファ
+StructuredBuffer<BoidData> _BoidDataBufferRead;
+RWStructuredBuffer<BoidData> _BoidDataBufferWite;
+
+// Forceのバッファ
+StructuredBuffer<float3> _BoidForceBufferRead;
+RWStructuredBuffer<float3> _BoidForceBufferWrite;
+
+// シェアードメモリ
+groupshared BoidData boid_data[SIMULATION_BLOCK_SIZE];
+
+[numthreads(SIMULATION_BLOCK_SIZE, 1, 1)]
+void Force()
+{
+
+}
+
+[numthreads(SIMULATION_BLOCK_SIZE, 1, 1)]
+void Integrate()
+{
+    
+}
