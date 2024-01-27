@@ -458,7 +458,7 @@ MonoBehaviour:
   _alignmentWeight: 1
   _cohesionNeighborhoodRadius: 2
   _cohesionWeight: 1
-  _avoidWallWeight: 10
+  _avoidWallWeight: 50
   _maxSpeed: 5
   _maxSteelForce: 0.5
   _wallCenter: {x: 0, y: 0, z: 0}

@@ -52,8 +52,10 @@ namespace W0NYV.Jovi.Boids
 
             for (int i = 0; i < _boidCount; i++)
             {
-                boidDataArray[i].Position = Random.insideUnitSphere * 0.25f;
-                boidDataArray[i].Velocity = Random.insideUnitSphere * 1.0f;
+                boidDataArray[i].Position = Random.insideUnitSphere * 1.0f;
+                // boidDataArray[i].Velocity = Random.insideUnitSphere * 0.1f;
+                boidDataArray[i].Velocity = new Vector3(Random.value, Random.value, Random.value);
+
 
                 forceArray[i] = Vector3.zero;
             }
@@ -74,7 +76,7 @@ namespace W0NYV.Jovi.Boids
 
             id = cs.FindKernel("Force");
 
-            cs.SetInt("_BoidsCount", _boidCount);
+            cs.SetInt("_BoidCount", _boidCount);
 
             cs.SetFloat("_SeparateNeighborhoodRadius", _separateNeighborhoodRadius);
             cs.SetFloat("_SeparateWeight", _separateWeight);
