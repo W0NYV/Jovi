@@ -16,7 +16,7 @@ RWStructuredBuffer<float3> _BoidForceBufferWrite;
 // シェアードメモリ
 groupshared BoidData boid_data[SIMULATION_BLOCK_SIZE];
 
-int _BoidsCount;
+int _BoidCount;
 
 float _DeltaTime;
 
@@ -62,7 +62,7 @@ void Force
 
     //グループスレッド数ごとの実行（グループ数分実行）
     [loop]
-    for (uint N_block_ID = 0; N_block_ID < (uint)_BoidsCount; N_block_ID += SIMULATION_BLOCK_SIZE)
+    for (uint N_block_ID = 0; N_block_ID < (uint)_BoidCount; N_block_ID += SIMULATION_BLOCK_SIZE)
     {
         //SIMULATION_BLOCK_SIZE分のBoidDataを、シェアードメモリに格納
         boid_data[GI] = _BoidDataBufferRead[N_block_ID + GI];

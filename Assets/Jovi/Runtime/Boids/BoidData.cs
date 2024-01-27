@@ -7,9 +7,9 @@ namespace W0NYV.Jovi.Boids
 {
     [System.Serializable]
     [VFXType(VFXTypeAttribute.Usage.GraphicsBuffer)]
-    internal struct BoidData
+    public struct BoidData
     {
-        internal Vector3 Velocity;
-        internal Vector3 Position;
+        public Vector3 Velocity;
+        public Vector3 Position;
     }
 }

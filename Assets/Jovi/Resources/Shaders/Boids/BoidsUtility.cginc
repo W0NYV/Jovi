@@ -31,4 +31,53 @@ float3 avoidWall(float3 position, float3 wallCenter, float3 wallSize)
     return acc;
 }
 
+float3 warpWall(float3 position, float3 wallCenter, float3 wallSize)
+{
+    float3 wc = wallCenter.xyz;
+    float3 ws = wallSize.xyz;
+    float3 newPos = float3(0, 0, 0);
+
+    if (position.x < ws.x * -0.5)
+    {
+        newPos.x = ws.x * 0.5;
+    }
+    else if(position.x > ws.x * 0.5)
+    {
+        newPos.x = ws.x * -0.5;
+    }
+    else
+    {
+        newPos.x = position.x;
+    }
+
+    if (position.y < ws.y * -0.5)
+    {
+        newPos.y = ws.y * 0.5;
+    }
+    else if(position.y > ws.y * 0.5)
+    {
+        newPos.y = ws.y * -0.5;
+    }
+    else
+    {
+        newPos.y = position.y;
+    }
+
+    
+    if (position.z < ws.z * -0.5)
+    {
+        newPos.z = ws.z * 0.5;
+    }
+    else if(position.z > ws.z * 0.5)
+    {
+        newPos.z = ws.z * -0.5;
+    }
+    else
+    {
+        newPos.z = position.z;
+    }
+
+    return newPos;
+}
+
 #endif

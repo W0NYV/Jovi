@@ -20,7 +20,23 @@ namespace W0NYV.Jovi.Boids
 
         [Header("パラメータ")]
         [SerializeField, Range(256, 32768)] private int _boidCount = 256;
-        [SerializeField] private float _maxSpeed;
+
+        [SerializeField] private float _separateNeighborhoodRadius = 1.0f;
+        [SerializeField] private float _separateWeight = 3.0f;
+
+        [SerializeField] private float _alignmentNeighborhoodRadius = 2.0f;
+        [SerializeField] private float _alignmentWeight = 1.0f;
+
+        [SerializeField] private float _cohesionNeighborhoodRadius = 2.0f;
+        [SerializeField] private float _cohesionWeight = 1.0f;
+
+        [SerializeField] private float _avoidWallWeight = 10.0f;
+
+        [SerializeField] private float _maxSpeed = 5.0f;
+        [SerializeField] private float _maxSteelForce = 0.5f;
+
+        [SerializeField] private Vector3 _wallCenter = Vector3.zero;
+        [SerializeField] private Vector3 _wallSize = new Vector3(32.0f, 32.0f, 32.0f);
 
         #endregion
 
@@ -36,8 +52,8 @@ namespace W0NYV.Jovi.Boids
 
             for (int i = 0; i < _boidCount; i++)
             {
-                boidDataArray[i].Position = Random.insideUnitSphere * 7f;
-                boidDataArray[i].Velocity = Random.insideUnitSphere * 0.1f;
+                boidDataArray[i].Position = Random.insideUnitSphere * 0.25f;
+                boidDataArray[i].Velocity = Random.insideUnitSphere * 1.0f;
 
                 forceArray[i] = Vector3.zero;
             }
@@ -57,13 +73,36 @@ namespace W0NYV.Jovi.Boids
             int id = -1;
 
             id = cs.FindKernel("Force");
-            cs.SetBuffer(id, "BoidDataBufferRead", _boidDataBuffer);
-            cs.SetBuffer(id, "BoidDataBufferWrite", _boidForceBuffer);
+
+            cs.SetInt("_BoidsCount", _boidCount);
+
+            cs.SetFloat("_SeparateNeighborhoodRadius", _separateNeighborhoodRadius);
+            cs.SetFloat("_SeparateWeight", _separateWeight);
+
+            cs.SetFloat("_AlignmentNeighborhoodRadius", _alignmentNeighborhoodRadius);
+            cs.SetFloat("_AlignmentWeight", _alignmentWeight);
+
+            cs.SetFloat("_CohesionNeighborhoodRadius", _cohesionNeighborhoodRadius);
+            cs.SetFloat("_CohesionWeight", _cohesionWeight);
+
+            cs.SetFloat("_AvoidWallWeight", _avoidWallWeight);
+            
+            cs.SetFloat("_MaxSpeed", _maxSpeed);
+            cs.SetFloat("_MaxSteelForce", _maxSteelForce);
+
+            cs.SetVector("_WallCenter", _wallCenter);
+            cs.SetVector("_WallSize", _wallSize);
+
+            cs.SetBuffer(id, "_BoidDataBufferRead", _boidDataBuffer);
+            cs.SetBuffer(id, "_BoidForceBufferWrite", _boidForceBuffer);
             cs.Dispatch(id, threadGroupSize, 1, 1);
 
             id = cs.FindKernel("Integrate");
-            cs.SetBuffer(id, "BoidDataBufferRead", _boidForceBuffer);
-            cs.SetBuffer(id, "BoidDataBufferWrite", _boidDataBuffer);
+
+            cs.SetFloat("_DeltaTime", Time.deltaTime);
+
+            cs.SetBuffer(id, "_BoidForceBufferRead", _boidForceBuffer);
+            cs.SetBuffer(id, "_BoidDataBufferWrite", _boidDataBuffer);
             cs.Dispatch(id, threadGroupSize, 1, 1);
         }
 
