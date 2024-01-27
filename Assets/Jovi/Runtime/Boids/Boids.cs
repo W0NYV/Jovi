@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.InteropServices;
+using UnityEngine.VFX;
 
 namespace W0NYV.Jovi.Boids
 {
@@ -11,11 +12,11 @@ namespace W0NYV.Jovi.Boids
 
         private const int SIMULATION_BLOCK_SIZE = 256;
 
-        private Boids2VFX _boids2VFX;
         private GraphicsBuffer _boidForceBuffer;
         private GraphicsBuffer _boidDataBuffer;
 
         [SerializeField] private ComputeShader _computeShader;
+        [SerializeField] private VisualEffect _visualEffect;
 
         [Header("パラメータ")]
         [SerializeField, Range(256, 32768)] private int _boidCount = 256;
@@ -79,16 +80,11 @@ namespace W0NYV.Jovi.Boids
 
         #region MonoBehaviour implementation
 
-        private void Awake() 
-        {
-            TryGetComponent<Boids2VFX>(out _boids2VFX);    
-        }
-
         private void Start() 
         {
             InitGraphicsBuffers();
 
-            _boids2VFX.SetGraphicsBuffer(_boidDataBuffer);
+            _visualEffect.SetGraphicsBuffer("GraphicsBuffer", _boidDataBuffer);
         }
 
         private void Update() 
