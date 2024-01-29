@@ -11,5 +11,13 @@
 
     "dependencies": {
         "com.unity.visualeffectgraph": "12.1.13"
-    }
+    },
+
+    "samples": [
+        {
+            "displayName": "Boids",
+            "description": "GPU Boids Simulation System",
+            "path": "Samples/SampleData/Sample001_Boids"
+        }
+    ]
 }
