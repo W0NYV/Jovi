@@ -1,5 +1,4 @@
-#ifndef PIXELSORT_INCLUDED
-#define PIXELSORT_INCLUDED
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
 // Re:Reimplemented : https://www.shadertoy.com/view/NdGXWD
 
@@ -18,7 +17,5 @@ void draw_float(float4 src, float threshold, float2 uv, SamplerState Sampler, ou
 
     UnitySamplerState hoge;
 
-    dest = SAMPLE_TEXTURE2D_X(_BlitTexture, Sampler, uv);
+    dest = SAMPLE_TEXTURE2D_X(_BlitTexture, uv);
 }
-
-#endif
