@@ -17,8 +17,8 @@ MonoBehaviour:
       type: 3}
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
-  - {fileID: 2325834300134629880}
-  m_RendererFeatureMap: f8a1f121f9054720
+  - {fileID: 6749175950401194044}
+  m_RendererFeatureMap: 3cc845aac4e3a95d
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -61,7 +61,7 @@ MonoBehaviour:
   m_CopyDepthMode: 1
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
---- !u!114 &2325834300134629880
+--- !u!114 &6749175950401194044
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -70,14 +70,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d613f08f173d4dd895bb07b3230baa9, type: 3}
-  m_Name: PixelSortRendererFeature
+  m_Script: {fileID: 11500000, guid: ea24af4cc1fcb2948af741c273460425, type: 3}
+  m_Name: PixelSortRenderFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  injectionPoint: 600
-  fetchColorBuffer: 1
-  requirements: 0
-  passMaterial: {fileID: 2100000, guid: 835a457999780d348bb7ef0c28539c40, type: 2}
-  passIndex: 0
-  bindDepthStencilAttachment: 0
-  m_Version: 1
+  _settings:
+    Threshold: 1
+  _shader: {fileID: 4800000, guid: 9505e4c2309b30440a1af015ce07acdc, type: 3}
