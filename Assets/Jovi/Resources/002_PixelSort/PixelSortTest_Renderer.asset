@@ -75,5 +75,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   _settings:
-    Threshold: 1
+    Threshold: 0.266
   _shader: {fileID: 4800000, guid: 9505e4c2309b30440a1af015ce07acdc, type: 3}

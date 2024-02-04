@@ -14,6 +14,8 @@ namespace W0NYV.Jovi.PixelSort
         private RTHandle _pixelSortTextureHandle;
         private RTHandle _postPixelSortTextureHandle;
 
+        private Vector2 _texelSize;
+
         // private static readonly int thresholdId = Shader.PropertyID("_Threshold");
 
         //これコンストラクタだから public じゃなくない？
@@ -31,13 +33,16 @@ namespace W0NYV.Jovi.PixelSort
 
             RTHandle cameraTargetHandle = renderingData.cameraData.renderer.cameraColorTargetHandle;
 
-            UpdatePixelSortSettngs();
+            UpdatePixelSortSettngs(cameraTargetHandle);
+
+            // cmd.SetGlobalTexture("_SrcTex", cameraTargetHandle);
+
 
             Blit(cmd, cameraTargetHandle, _pixelSortTextureHandle, _material, 0);
 
-            Blit(cmd, _pixelSortTextureHandle, cameraTargetHandle, _material, 1);
+            Blit(cmd, _pixelSortTextureHandle, _postPixelSortTextureHandle, _material, 1);
 
-            //Blit(cmd, _postPixelSortTextureHandle, cameraTargetHandle, _material, 2);
+            Blit(cmd, _postPixelSortTextureHandle, cameraTargetHandle, _material, 2);
 
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
@@ -47,6 +52,8 @@ namespace W0NYV.Jovi.PixelSort
         {
             _pixelSortTextureDescriptor.width = cameraTextureDescriptor.width;
             _pixelSortTextureDescriptor.height = cameraTextureDescriptor.height;
+
+            _texelSize = new Vector2(_pixelSortTextureDescriptor.width, _pixelSortTextureDescriptor.height);
 
             //ディスクリプタが変更されたかどうかをチェックし、必要であればRTHandleを再割り当てする。
             RenderingUtils.ReAllocateIfNeeded(ref _pixelSortTextureHandle, _pixelSortTextureDescriptor);
@@ -72,11 +79,13 @@ namespace W0NYV.Jovi.PixelSort
             if (_postPixelSortTextureHandle != null) _postPixelSortTextureHandle.Release();
         }
 
-        private void UpdatePixelSortSettngs()
+        private void UpdatePixelSortSettngs(RTHandle rtHandle)
         {
             if (_material == null) return;
 
             _material.SetFloat("_Threshold", _settings.Threshold);
+            _material.SetVector("_TexelSize", _texelSize);
+            _material.SetTexture("_SrcTex", rtHandle);
         }
     }
 }

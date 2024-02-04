@@ -2,7 +2,8 @@ Shader "Hidden/Jovi/PixelSort"
 {
     Properties
     {
-        _Threshold("Threshold", Range(0.0, 1.0)) = 1.0 
+        _Threshold("Threshold", Range(0.0, 1.0)) = 1.0
+        _SrcTex("Source Texture", 2D) = "defaulttexture" {}
     }
 
     SubShader

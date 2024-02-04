@@ -2,6 +2,10 @@
 #include "Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/Common.hlsl"
 
 float _Threshold;
+TEXTURE2D(_SrcTex);
+SAMPLER(sampler_SrcTex);
+
+float4 _TexelSize;
 
 half gray(float c)
 {
@@ -13,6 +17,10 @@ float4 draw(float2 texcoord)
     half4 col = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, texcoord);
 
     half g = gray(col.rgb);
+    if (g < _Threshold)
+    {
+        return float4(texcoord, 1.0, 1.0);
+    }
 
     float angle = 0.0;
 
@@ -20,7 +28,7 @@ float4 draw(float2 texcoord)
     float2 headPos;
 
     //これを解像度で割るとどうなる？
-    float2 dir = float2(cos(angle), sin(angle)) / _ScreenParams.xy;
+    float2 dir = float2(cos(angle), sin(angle)) / _TexelSize.xy;
 
     //ピクセルソートの開始位置を探るためのやつ
 
@@ -64,7 +72,6 @@ float4 draw(float2 texcoord)
         //端だったら
         if (uv2.x < 0.0 || uv2.y < 0.0 || uv2.x >= 1.0 || uv2.y >= 1.0)
         {
-            headPos = uv2;
             break;
         }
 
@@ -73,7 +80,6 @@ float4 draw(float2 texcoord)
         half g_i = gray(col_i);
         if (g_i < _Threshold)
         {
-            headPos = uv2;
             break;
         }
 
@@ -86,7 +92,7 @@ float4 draw(float2 texcoord)
 
     float2 dst = headPos + rank * dir;
 
-    return float4(col.rgb, dst.x);
+    return float4(dst, 1.0, 1.0);
 }
 
 float4 draw2(float2 texcoord)
@@ -96,12 +102,12 @@ float4 draw2(float2 texcoord)
 
     float4 col = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, uv);
 
-    float error = 3.0;
+    float error = 50.0;
     float angle = 0.0;
 
-    float pixelSize = error / _ScreenParams.xy;
+    float pixelSize = error / _TexelSize.x;
 
-    float2 dir = float2(cos(angle), sin(angle)) / _ScreenParams.xy;
+    float2 dir = float2(cos(angle), sin(angle)) / _TexelSize.xy;
 
     float2 uv2;
     float2 uv3;
@@ -110,10 +116,10 @@ float4 draw2(float2 texcoord)
     for (float i = 0.0; i < 999.0; i += 1.0)
     {
         uv2 = uv - dir * i;
-        uv3 = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, uv2).a;
+        uv3 = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, uv2).xy;
         if (length(uv - uv3) < pixelSize)
         {
-            return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, float2(uv2.x, uv.y));
+            return SAMPLE_TEXTURE2D_X(_SrcTex, sampler_PointClamp, uv2);
         }
     }
 
@@ -121,14 +127,15 @@ float4 draw2(float2 texcoord)
     for (float i = 0.0; i < 999.0; i += 1.0)
     {
         uv2 = uv + dir * i;
-        uv3 = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, uv2).a;
+        uv3 = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, uv2).xy;
         if (length(uv - uv3) < pixelSize)
         {
-            return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, float2(uv2.x, uv.y));
+            return SAMPLE_TEXTURE2D_X(_SrcTex, sampler_PointClamp, uv2);
         }
     }
 
-    return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, float2(col.a, uv.y));
+    //return float4(0.0, 0.0, 0.0, 1.0); 
+    return SAMPLE_TEXTURE2D_X(_SrcTex, sampler_PointClamp, col.xy);
 
 }
 
@@ -139,8 +146,7 @@ half4 PixelSort0(Varyings i) : SV_Target
 
 half4 PixelSort1(Varyings i) : SV_Target
 {   
-    half4 col = draw2(i.texcoord);
-    return col;
+    return draw2(i.texcoord);
 }
 
 half4 PixelSort2(Varyings i) : SV_Target
